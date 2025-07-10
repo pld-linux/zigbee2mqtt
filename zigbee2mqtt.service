@@ -1,0 +1,20 @@
+[Unit]
+Description=zigbee2mqtt bridge
+After=network.target mosquitto.service
+Wants=network.target
+
+[Service]
+User=zigbee2mqtt
+Group=zigbee2mqtt
+WorkingDirectory=@@DATADIR@@
+ExecStart=/usr/bin/node index.js
+Environment="ZIGBEE2MQTT_DATA=@@STATEDIR@@"
+PrivateTmp=no
+PrivateUsers=yes
+ProtectHome=yes
+ProtectProc=invisible
+ProtectSystem=yes
+RestrictNamespaces=yes
+
+[Install]
+WantedBy=multi-user.target
