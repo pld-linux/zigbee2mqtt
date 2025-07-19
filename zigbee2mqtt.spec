@@ -55,7 +55,7 @@ export CFLAGS="%{rpmcflags}"
 export CXXFLAGS="%{rpmcxxflags}"
 export LDFLAGS="%{rpmldflags}"
 for mod in %built_modules; do
-	node-gyp -C node_modules/$mod configure
+	node-gyp -C node_modules/$mod --nodedir=/usr configure
 	node-gyp -C node_modules/$mod --release --verbose -j %{__jobs} build
 done
 npm run build
