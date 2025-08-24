@@ -1,16 +1,17 @@
 Summary:	Zigbee to MQTT bridge
 Name:		zigbee2mqtt
-Version:	2.5.1
+Version:	2.6.0
 Release:	1
 License:	GPL v3+
 Group:		Applications
 Source0:	https://github.com/Koenkk/zigbee2mqtt/archive/%{version}/%{name}-%{version}.tar.gz
-# Source0-md5:	d2a20f41406e1cf8e677f04bc25abfd6
+# Source0-md5:	009f40c44fda4d047cf065a42c886373
 # tar -xf zigbee2mqtt-%{version}.tar.gz
-# npm -C zigbee2mqtt-%{version} install --no-audit --no-fund
+# npm -C zigbee2mqtt-%{version} install --ignore-scripts --cpu noarch --no-audit --no-fund --no-update-check
+# find zigbee2mqtt-%{version}/node_modules -type d -name prebuilds -prune -exec rm -r {} +
 # tar -C zigbee2mqtt-%{version} -acf zigbee2mqtt-node_modules-%{version}.tar.xz node_modules
 Source1:	%{name}-node_modules-%{version}.tar.xz
-# Source1-md5:	1677103fc3cfc84ef6a6c8ef0111f7b3
+# Source1-md5:	fb2a5a87c4636d03220d5d545fda5185
 Source2:	%{name}.service
 URL:		https://www.zigbee2mqtt.io
 BuildRequires:	libstdc++-devel
@@ -31,8 +32,6 @@ Provides:	group(zigbee2mqtt)
 Provides:	user(zigbee2mqtt)
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		built_modules	@serialport/bindings-cpp unix-dgram
-
 %description
 zigbee2mqtt allows you to use your Zigbee devices without the vendor's
 bridge or gateway. It bridges events and allows you to control your
@@ -44,9 +43,6 @@ devices with whatever smart home infrastructure you are using.
 
 grep -r '#!.*env node' -l . | xargs %{__sed} -i -e '1 s,#!.*env node,#!/usr/bin/node,'
 
-%{__rm} -r node_modules/@serialport/bindings-cpp/prebuilds
-%{__rm} -r node_modules/unix-dgram/build
-
 %build
 export CC="%{__cc}"
 export CXX="%{__cxx}"
@@ -54,9 +50,11 @@ export CPPFLAGS="%{rpmcppflags}"
 export CFLAGS="%{rpmcflags}"
 export CXXFLAGS="%{rpmcxxflags}"
 export LDFLAGS="%{rpmldflags}"
-for mod in %built_modules; do
-	node-gyp -C node_modules/$mod --nodedir=/usr configure
-	node-gyp -C node_modules/$mod --release --verbose -j %{__jobs} build
+IFS="
+"
+for mod_dir in `find node_modules -name binding.gyp -printf '%h\n'`; do
+	node-gyp -C "$mod_dir" --nodedir=/usr configure
+	node-gyp -C "$mod_dir" --release --verbose -j %{__jobs} build
 done
 npm run build
 
@@ -66,11 +64,13 @@ rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_libdir}/%{name},%{systemdunitdir},%{_sharedstatedir}/%{name}}
 
 cp -pr dist index.js lib node_modules package.json $RPM_BUILD_ROOT%{_libdir}/%{name}
-for mod in %built_modules; do
-	%{__mv} $RPM_BUILD_ROOT%{_libdir}/%{name}/node_modules/$mod/build{,.old}
-	install -d $RPM_BUILD_ROOT%{_libdir}/%{name}/node_modules/$mod/build/Release
-	%{__mv} $RPM_BUILD_ROOT%{_libdir}/%{name}/node_modules/$mod/build{.old/Release/*.node,/Release}
-	%{__rm} -r $RPM_BUILD_ROOT%{_libdir}/%{name}/node_modules/$mod/build.old
+IFS="
+"
+for mod_dir in `find $RPM_BUILD_ROOT%{_libdir}/%{name}/node_modules -name binding.gyp -printf '%h\n'`; do
+	%{__mv} "$mod_dir"/build{,.old}
+	install -d "$mod_dir"/build/Release
+	%{__mv} "$mod_dir"/build{.old/Release/*.node,/Release}
+	%{__rm} -r "$mod_dir"/build.old
 done
 
 %{__sed} -e 's;@@DATADIR@@;%{_libdir}/%{name};g' \
