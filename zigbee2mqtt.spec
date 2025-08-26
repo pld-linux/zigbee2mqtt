@@ -30,6 +30,7 @@ Requires:	nodejs
 Suggests:	mosquitto
 Provides:	group(zigbee2mqtt)
 Provides:	user(zigbee2mqtt)
+ExclusiveArch:	%{ix86} %{x8664} %{arm} aarch64
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
