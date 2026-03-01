@@ -89,11 +89,18 @@ rm -rf $RPM_BUILD_ROOT
 %groupadd -g 355 zigbee2mqtt
 %useradd -d /usr/share/empty -u 355 -g zigbee2mqtt -c "zigbee2mqtt bridge" -s /bin/false zigbee2mqtt
 
+%post
+%systemd_post zigbee2mqtt.service
+
+%preun
+%systemd_preun zigbee2mqtt.service
+
 %postun
 if [ "$1" = "0" ]; then
 	%userremove zigbee2mqtt
 	%groupremove zigbee2mqtt
 fi
+%systemd_reload
 
 %files
 %defattr(644,root,root,755)
