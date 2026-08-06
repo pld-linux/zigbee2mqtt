@@ -16,6 +16,7 @@ Source1:	%{name}-node_modules-%{node_modules_ver}.tar.xz
 # Source1-md5:	28ba91cca7367a571a0c625ded0e2648
 Source2:	%{name}.service
 URL:		https://www.zigbee2mqtt.io
+BuildRequires:	jq
 BuildRequires:	libstdc++-devel
 BuildRequires:	nodejs-gyp
 BuildRequires:	nodejs-typescript
@@ -46,6 +47,8 @@ devices with whatever smart home infrastructure you are using.
 
 grep -r '#!.*env node' -l . | xargs %{__sed} -i -e '1 s,#!.*env node,#!/usr/bin/node,'
 
+test "$(jq -r .scripts.build package.json)" = "tsc && node index.js writehash"
+
 %build
 export CC="%{__cc}"
 export CXX="%{__cxx}"
@@ -59,7 +62,8 @@ for mod_dir in `find node_modules -name binding.gyp -printf '%h\n'`; do
 	node-gyp -C "$mod_dir" --nodedir=/usr configure
 	node-gyp -C "$mod_dir" --release --verbose -j %{__jobs} build
 done
-npm run build
+tsc
+node index.js writehash
 
 %install
 rm -rf $RPM_BUILD_ROOT
