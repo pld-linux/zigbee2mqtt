@@ -1,19 +1,19 @@
-%define		node_modules_ver	2.13.0
+%define		node_modules_ver	2.14.0
 
 Summary:	Zigbee to MQTT bridge
 Name:		zigbee2mqtt
-Version:	2.13.0
+Version:	2.14.0
 Release:	1
 License:	GPL v3+
 Group:		Applications
 Source0:	https://github.com/Koenkk/zigbee2mqtt/archive/%{version}/%{name}-%{version}.tar.gz
-# Source0-md5:	987c9be18caaf6b61d5dd9275f4e7367
+# Source0-md5:	a06b78abccd82a3dde0a2816dfbac675
 # tar -xf zigbee2mqtt-%{version}.tar.gz
 # npm -C zigbee2mqtt-%{version} install --ignore-scripts --cpu noarch --no-audit --no-fund --no-update-check
 # find zigbee2mqtt-%{version}/node_modules -type d -name prebuilds -prune -exec rm -r {} +
 # tar -C zigbee2mqtt-%{version} -acf zigbee2mqtt-node_modules-%{version}.tar.xz node_modules
 Source1:	%{name}-node_modules-%{node_modules_ver}.tar.xz
-# Source1-md5:	100bb46e67fe04808a0cdc6a81144697
+# Source1-md5:	ac542f1af3e30c81d259ffe72b975153
 Source2:	%{name}.service
 URL:		https://www.zigbee2mqtt.io
 BuildRequires:	jq
